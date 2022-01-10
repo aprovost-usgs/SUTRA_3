@@ -1669,6 +1669,7 @@ C                                                                        LAKNEW.
       DIMENSION VOLWNEW(NLAKES),QNEW(NLAKES),QUNEW(NLAKES)               LAKNEW........1100
       DIMENSION FSPLNEW(NLAKES),GSPLNEW(NLAKES)                          LAKNEW........1200
       DIMENSION WMCNEW(NLAKES),UWMSNEW(NLAKES),UWNEW(NLAKES)             LAKNEW........1300
+      INTEGER KTYPE(2)                                                   ! fix civ 200723a
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  LAKNEW........1400
      1   NPCYC,NUCYC,NPRINT,NBCFPR,NBCSPR,NBCPPR,NBCUPR,NLAKPR,IREAD,    LAKNEW........1500
      1   NBGPPR,NBGUPR,ISTORE,NOUMAT,IUNSAT,IALSAT,KTYPE                 LAKNEW........1600
@@ -2514,7 +2515,9 @@ C                                                                        LBCSOP.
 C.....FIND INDEX OF THE FLUID SOURCE/SINK NODE.  IF NOT A                LBCSOP........2600
 C        FLUID SOURCE/SINK NODE, RETURN.                                 LBCSOP........2700
       ISBC = .FALSE.                                                     LBCSOP........2800
-      DO 140 IP=1,NSOP                                                   LBCSOP........2900
+ccc      DO 140 IP=1,NSOP                                                   LBCSOP........2900
+      NSOPI = NSOP - 1                                                   ! fix rbw 200519a
+      DO 140 IP=1,NSOPI                                                  ! fix rbw 200519a
          INP = IP                                                        LBCSOP........3000
          IF (IABS(IQSOP(INP)).EQ.ILN) THEN                               LBCSOP........3100
             ISBC = .TRUE.                                                LBCSOP........3200
@@ -2606,9 +2609,12 @@ C                                                                        LBCSOU.
 C........FIND INDEX OF THE SOLUTE OR ENERGY SOURCE/SINK NODE.  IF NOT    LBCSOU........2900
 C           A SOLUTE OR ENERGY SOURCE/SINK NODE, RETURN.                 LBCSOU........3000
          ISBC = .FALSE.                                                  LBCSOU........3100
-         DO 140 IU=1,NUBC                                                LBCSOU........3200
-            IPU = NPBC + IU                                              LBCSOU........3300
-            INP = IPU                                                    LBCSOU........3400
+ccc         DO 140 IU=1,NUBC                                                LBCSOU........3200
+ccc            IPU = NPBC + IU                                              LBCSOU........3300
+ccc            INP = IPU                                                    LBCSOU........3400
+         NSOUI = NSOU - 1                                                ! fix rbw 200519a
+         DO 140 IQU=1,NSOUI                                              ! fix rbw 200519a
+            INP = IQU                                                    ! fix rbw 200519a
             IF (IABS(IQSOU(INP)).EQ.ILN) THEN                            LBCSOU........3500
                ISBC = .TRUE.                                             LBCSOU........3600
                EXIT                                                      LBCSOU........3700
@@ -3584,6 +3590,7 @@ C                                                                        OUTLKRS
       SUBROUTINE OUTLKRS()                                               OUTLKRS........600
       USE LARR                                                           OUTLKRS........700
       IMPLICIT DOUBLE PRECISION (A-H, O-Z)                               OUTLKRS........800
+      INTEGER KTYPE(2)                                                   ! fix civ 200723a
       LOGICAL LAKUP                                                      OUTLKRS........900
       COMMON /BUDO/ TSECO,LUTSO                                          OUTLKRS.......1000
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  OUTLKRS.......1100
@@ -3964,7 +3971,8 @@ C                                                                        SLAKE..
       SUBROUTINE SLAKE()                                                 SLAKE..........700
       USE LARR                                                           SLAKE..........800
       IMPLICIT DOUBLE PRECISION (A-H, O-Z)                               SLAKE..........900
-      LOGICAL ISDESC                                                     SLAKE.........1000
+      INTEGER KTYPE(2)                                                   ! fix civ 200723a
+      LOGICAL ISDESC, LAKUP                                              ! fix civ 200722a   SLAKE.........1000
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  SLAKE.........1100
      1   NPCYC,NUCYC,NPRINT,NBCFPR,NBCSPR,NBCPPR,NBCUPR,NLAKPR,IREAD,    SLAKE.........1200
      1   NBGPPR,NBGUPR,ISTORE,NOUMAT,IUNSAT,IALSAT,KTYPE                 SLAKE.........1300

@@ -2219,7 +2219,8 @@ C.....MODIFY EQUATION FOR P BY ADDING FLUID SOURCE AT                    BCG....
 C        GENERALIZED-FLOW NODE                                           BCG..........12000
   100 IF (.NOT.LPBGSP(IPG)) THEN                                         BCG..........12100
 C........NOT ACTING AS A SPECIFIED-P NODE                                BCG..........12200
-         IF (ISPBG(IPG).NE.0) THEN                                       BCG..........12300
+ccc         IF (ISPBG(IPG).NE.0) THEN                                       BCG..........12300
+         IF (ISPBG(I).NE.0) THEN                                         ! fix wt220107
 C...........ACTING AS A NORMAL PBG NODE                                  BCG..........12400
             IF ((CPQL1(IPG).EQ."Q").AND.(PITER(I).LT.PBG1EFF)) THEN      BCG..........12500
                GPINL = 0D0                                               BCG..........12600
@@ -3836,7 +3837,7 @@ C        AFFECTED BY LAKES)                                              BUDGET.
       NSOPI=NSOP-1                                                       BUDGET.......28200
       IF (NSOPI.EQ.0) GOTO 600                                           BUDGET.......28300
       LAKELGSOP = .FALSE.                                                BUDGET.......28400
-      LAKESOPANY = .FALSE.                                               BUDGET.......28500
+      LAKELGSOPANY = .FALSE.                                             ! fix civ 200722b      BUDGET.......28500
       IF (LAKUSD) THEN                                                   BUDGET.......28600
          DO 340 IQP=1,NSOPI                                              BUDGET.......28700
             I=IQSOP(IQP)                                                 BUDGET.......28800
@@ -4552,7 +4553,7 @@ C        AFFECTED BY LAKES)                                              BUDGET.
       NSOUI=NSOU-1                                                       BUDGET.......99800
       IF (NSOUI.EQ.0) GOTO 4500                                          BUDGET.......99900
       LAKELGSOU = .FALSE.                                                BUDGET......100000
-      LAKESOUANY = .FALSE.                                               BUDGET......100100
+      LAKELGSOUANY = .FALSE.                                             ! fix civ 200722b      BUDGET......100100
       IF (LAKUSD) THEN                                                   BUDGET......100200
          DO 4040 IQU=1,NSOUI                                             BUDGET......100300
             I=IQSOU(IQU)                                                 BUDGET......100400
@@ -4933,7 +4934,8 @@ C...........ACTS ANALOGOUSLY TO A FLUID SOURCE/SINK NODE.                BUDPBG.
             QEXGW = 0D0                                                  BUDPBG........6500
             QEXLK = QPBG                                                 BUDPBG........6600
             QEXRO = 0D0                                                  BUDPBG........6700
-            IF (QPGITR(I).GT.0D0) THEN                                   BUDPBG........6800
+ccc            IF (QPGITR(I).GT.0D0) THEN                                   BUDPBG........6800
+            IF (QPGITR(IPG).GT.0D0) THEN                                 ! fix rbw 200520
                QUPBG = QPGITR(IPG)*CW*UPBGI(IPG)                         BUDPBG........6900
                UEX = UPBGI(IPG)                                          BUDPBG........7000
             ELSE                                                         BUDPBG........7100
@@ -5256,7 +5258,7 @@ C........THIS IS A LAKE NODE (INUNDATED).                                BUDUBG.
 C                                                                        BUDUBG........3600
 C........GET FLOW OF SOLUTE/ENERGY.                                      BUDUBG........3700
          ISURF = ISURFACE(I)                                             BUDUBG........3800
-         LAKELG = LAKNOD(ISURF)%LAKEOK                                   BUDUBG........3900
+!!         LAKELG = LAKNOD(ISURF)%LAKEOK                                 ! fix civ 200722c   BUDUBG........3900
          NFB = IBCSUG(IUG)                                               BUDUBG........4000
          LIT = ITIUG(NFB)                                                BUDUBG........4100
          IF (LIT.EQ.1) THEN                                              BUDUBG........4200
@@ -7230,6 +7232,7 @@ C                                                                        GETISPB
       USE ALLARR                                                         GETISPBG.......900
       USE LARR, ONLY : LKBCPBC,LKBCPBG,ITIPG,ISLAKE,IBCSPG,ISURFACE,PLK  GETISPBG......1000
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)                                GETISPBG......1100
+      INTEGER KTYPE(2)                                                   ! fix civ 200723a
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  GETISPBG......1200
      1   NPCYC,NUCYC,NPRINT,NBCFPR,NBCSPR,NBCPPR,NBCUPR,NLAKPR,IREAD,    GETISPBG......1300
      1   NBGPPR,NBGUPR,ISTORE,NOUMAT,IUNSAT,IALSAT,KTYPE                 GETISPBG......1400
@@ -7299,6 +7302,7 @@ C                                                                        GETQPG.
       USE ALLARR                                                         GETQPG.........800
       USE LARR, ONLY : IBCSPG,ITIPG                                      GETQPG.........900
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)                                GETQPG........1000
+      INTEGER KTYPE(2)                                                   ! fix civ 200723a
       DIMENSION PVAL(NN)                                                 GETQPG........1100
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  GETQPG........1200
      1   NPCYC,NUCYC,NPRINT,NBCFPR,NBCSPR,NBCPPR,NBCUPR,NLAKPR,IREAD,    GETQPG........1300
@@ -7381,6 +7385,7 @@ C                                                                        GETQPGI
       USE ALLARR                                                         GETQPGITR......700
       USE LARR, ONLY : ISLAKE,LAKNOD,PLK,IBCSPG,ITIPG,LKBCPBG,ISURFACE   GETQPGITR......800
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)                                GETQPGITR......900
+      INTEGER KTYPE(2)                                                   ! fix civ 200723a
       LOGICAL ONCEP                                                      GETQPGITR.....1000
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  GETQPGITR.....1100
      1   NPCYC,NUCYC,NPRINT,NBCFPR,NBCSPR,NBCPPR,NBCUPR,NLAKPR,IREAD,    GETQPGITR.....1200
@@ -7432,6 +7437,7 @@ C                                                                        GETQPL.
       USE ALLARR                                                         GETQPL.........700
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)                                GETQPL.........800
       DIMENSION PVAL(NN)                                                 GETQPL.........900
+      INTEGER KTYPE(2)                                                   ! fix civ 200723a
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  GETQPL........1000
      1   NPCYC,NUCYC,NPRINT,NBCFPR,NBCSPR,NBCPPR,NBCUPR,NLAKPR,IREAD,    GETQPL........1100
      1   NBGPPR,NBGUPR,ISTORE,NOUMAT,IUNSAT,IALSAT,KTYPE                 GETQPL........1200
@@ -7490,6 +7496,7 @@ C                                                                        GETQPLI
       USE ALLARR                                                         GETQPLITR......700
       USE LARR, ONLY : ISLAKE,LAKNOD,PLK,LKBCPBC,ISURFACE                GETQPLITR......800
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)                                GETQPLITR......900
+      INTEGER KTYPE(2)                                                   ! fix civ 200723a
       LOGICAL ONCEP                                                      GETQPLITR.....1000
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  GETQPLITR.....1100
      1   NPCYC,NUCYC,NPRINT,NBCFPR,NBCSPR,NBCPPR,NBCUPR,NLAKPR,IREAD,    GETQPLITR.....1200
@@ -8362,6 +8369,7 @@ C              ENTRIES THAT FALL OUTSIDE OF SCHEDULE "TIME_STEPS".       INDAT0.
                SCHDLS(I)%SLIST(LCNT)%DVALU2 = STEP                       INDAT0.......63500
   750       CONTINUE                                                     INDAT0.......63600
             SCHDLS(I)%LLEN = LCNT                                        INDAT0.......63700
+            IF (I.EQ.ISCHTS) ITMAX = LCNT - 1                            ! fix rbw itmax 200427
 C...........WRITE OUT THE SPECIFICATIONS.                                INDAT0.......63800
             WRITE(K3,752) SCHDLS(I)%NAME, TRIM(CREFT),                   INDAT0.......63900
      1         (TLIST(NT),NT=1,NTLIST)                                   INDAT0.......64000
@@ -10109,8 +10117,10 @@ C        FOR START-UP CALCULATION OF INFLOWS OR OUTFLOWS                 INDAT2.
       PBG1(IPG) = PVEC(-I)                                               INDAT2.......33000
       PBG2(IPG) = PVEC(-I)                                               INDAT2.......33100
       QPGITR(IPG) = 0D0                                                  INDAT2.......33200
-      ISPBG(IPG) = IPG                                                   INDAT2.......33300
-      LPBGSP(I) = .FALSE.                                                INDAT2.......33400
+ccc      ISPBG(IPG) = IPG                                                   INDAT2.......33300
+ccc      LPBGSP(I) = .FALSE.                                                INDAT2.......33400
+      ISPBG(-I) = IPG                                                    ! fix rbw 200518
+      LPBGSP(IPG) = .FALSE.                                              ! fix rbw 200518
   738 CONTINUE                                                           INDAT2.......33500
 C.....INITIALIZE P, U, AND CONSISTENT DENSITY                            INDAT2.......33600
   740 DO 800 I=1,NN                                                      INDAT2.......33700
@@ -10180,6 +10190,7 @@ C                                                                        INITUZ.
       USE ALLARR                                                         INITUZ.........700
       USE LARR, ONLY : LKBCUBC                                           INITUZ.........800
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)                                INITUZ.........900
+      INTEGER KTYPE(2)                                                   ! fix civ 200723a
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  INITUZ........1000
      1   NPCYC,NUCYC,NPRINT,NBCFPR,NBCSPR,NBCPPR,NBCUPR,NLAKPR,IREAD,    INITUZ........1100
      1   NBGPPR,NBGUPR,ISTORE,NOUMAT,IUNSAT,IALSAT,KTYPE                 INITUZ........1200
@@ -13236,6 +13247,7 @@ C........SET TEMPERATURE OR CONCENTRATION TEXT STRING FOR HEADER         OUTOBC.
          IF (ME .GT. 0) THEN                                             OUTOBC.......23100
             TORC1 = "Temperature  "                                      OUTOBC.......23200
             TORC2 = "  Temperature"                                      OUTOBC.......23300
+            COLTK8(6) = "    Temperature"                                ! satobs210709
          ELSE                                                            OUTOBC.......23400
             TORC1 = "Concentration"                                      OUTOBC.......23500
             TORC2 = "Concentration"                                      OUTOBC.......23600
@@ -13854,7 +13866,8 @@ C.....STORE SOLUTION                                                     OUTRST.
             WRITE(K4,110) (CUTSML(QPGITR(IPG)),IPG=1,NPBG)               OUTRST.......10000
             WRITE(K4,110) (CUTSML(QINITR(I)),I=1,NN)                     OUTRST.......10100
             WRITE(K4,112) (ISPBG(I),I=1,NN)                              OUTRST.......10200
-            WRITE(K4,112) (LPBGSP(IPG),IPG=1,NPBG)                       OUTRST.......10300
+ccc            WRITE(K4,112) (LPBGSP(IPG),IPG=1,NPBG)                       OUTRST.......10300
+            WRITE(K4,113) (LPBGSP(IPG),IPG=1,NPBG)                       ! fix rbw lpbgsp 200427
          END IF                                                          OUTRST.......10400
          WRITE(K4,'(I9)') NCIDB                                          OUTRST.......10500
          DO 103 NC=1,NCIDB                                               OUTRST.......10600
@@ -13864,6 +13877,7 @@ C.....STORE SOLUTION                                                     OUTRST.
   105 FORMAT("'NONUNIFORM'")                                             OUTRST.......11000
   110 FORMAT(1PE20.13,1X,1PE20.13,1X,1PE20.13,1X,1PE20.13)               OUTRST.......11100
   112 FORMAT(I20,1X,I20,1X,I20,1X,I20)                                   OUTRST.......11200
+  113 FORMAT(L20,1X,L20,1X,L20,1X,L20)                                   ! fix rbw lpbgsp 200427
 C                                                                        OUTRST.......11300
       ENDFILE(K4)                                                        OUTRST.......11400
 C                                                                        OUTRST.......11500
@@ -16705,7 +16719,8 @@ C                                                                        SUTRA..
       TYPE (OBSDAT), DIMENSION (NOBSN) :: OBSPTS                         SUTRA.........8500
       DIMENSION KTYPE(2)                                                 SUTRA.........8600
       TYPE (SCHLST), ALLOCATABLE :: DENOB(:)                             SUTRA.........8700
-      DIMENSION LCNT(NFLOMX)                                             SUTRA.........8800
+ccc      DIMENSION LCNT(NFLOMX)                                             SUTRA.........8800
+      DIMENSION LCOB(NFLOMX)                                             ! fix rbw 200519b
       COMMON /BCSL/ ONCEBCS                                              SUTRA.........8900
       COMMON /BUDO/ TSECO,LUTSO                                          SUTRA.........9000
       COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC,  SUTRA.........9100
@@ -16825,7 +16840,8 @@ C        UPDATE TSEC.                                                    SUTRA..
             DENOB(NFLO)%SLIST(LENDEN)%DVALU1 = TIME                      SUTRA........20500
             DENOB(NFLO)%SLIST(LENDEN)%DVALU2 = STEP                      SUTRA........20600
          END IF                                                          SUTRA........20700
-         LCNT(NFLO) = 1                                                  SUTRA........20800
+ccc         LCNT(NFLO) = 1                                                  SUTRA........20800
+         LCOB(NFLO) = 1                                                  ! fix rbw 200519b
   400 CONTINUE                                                           SUTRA........20900
 C                                                                        SUTRA........21000
 C.....INITIALIZE FLAGS THAT INDICATE WHETHER P AND U HAVE BEEN SOLVED    SUTRA........21100
@@ -16894,8 +16910,10 @@ C           SOLUTION IS COMPUTED.)                                       SUTRA..
                   END IF                                                 SUTRA........27400
                   STEP = DENOB(NFLO)%SLIST(1)%DVALU2                     SUTRA........27500
                   LENSCH = SCHDLS(OFP(NFLO)%ISCHED)%LLEN                 SUTRA........27600
-                  IF ((STEP.EQ.ITRST).AND.(LCNT(NFLO).LT.LENSCH)) THEN   SUTRA........27700
-                     LCNT(NFLO) = LCNT(NFLO) + 1                         SUTRA........27800
+ccc                  IF ((STEP.EQ.ITRST).AND.(LCNT(NFLO).LT.LENSCH)) THEN   SUTRA........27700
+ccc                     LCNT(NFLO) = LCNT(NFLO) + 1                         SUTRA........27800
+                  IF ((STEP.EQ.ITRST).AND.(LCOB(NFLO).LT.LENSCH)) THEN   ! fix rbw 200519b
+                     LCOB(NFLO) = LCOB(NFLO) + 1                         ! fix rbw 200519b
                   END IF                                                 SUTRA........27900
                END IF                                                    SUTRA........28000
   650       CONTINUE                                                     SUTRA........28100
@@ -17416,15 +17434,19 @@ C            CONDITION, CHECK FOR SCHEDULED OUTPUT AND PRINT IT.         SUTRA..
          IF ((ISSTRA.EQ.0).AND.(ITREL.NE.0)) THEN                        SUTRA........79600
 C...........GET THE LENGTH OF THE SCHEDULE AND THE NEXT TIME/STEP        SUTRA........79700
 C              SCHEDULED TO BE OUTPUT.                                   SUTRA........79800
-            IF (LCNT(NFLO).GT.LENSCH) CYCLE                              SUTRA........79900
+ccc            IF (LCNT(NFLO).GT.LENSCH) CYCLE                              SUTRA........79900
             LENSCH = DENOB(NFLO)%LLEN                                    SUTRA........80000
-            TIME = DENOB(NFLO)%SLIST(LCNT(NFLO))%DVALU1                  SUTRA........80100
-            STEP = DENOB(NFLO)%SLIST(LCNT(NFLO))%DVALU2                  SUTRA........80200
+            IF (LCOB(NFLO).GT.LENSCH) CYCLE                              ! fix rbw 200519b
+ccc            TIME = DENOB(NFLO)%SLIST(LCNT(NFLO))%DVALU1                  SUTRA........80100
+ccc            STEP = DENOB(NFLO)%SLIST(LCNT(NFLO))%DVALU2                  SUTRA........80200
+            TIME = DENOB(NFLO)%SLIST(LCOB(NFLO))%DVALU1                  ! fix rbw 200519b
+            STEP = DENOB(NFLO)%SLIST(LCOB(NFLO))%DVALU2                  ! fix rbw 200519b
 C...........LOOP THROUGH THE SCHEDULE, PRINTING ANY OUTPUT SCHEDULED     SUTRA........80300
 C              WITHIN THE CURRENT TIME STEP.  (LOOP AS LONG AS THE       SUTRA........80400
 C              SCHEDULED OUTPUT IS WITHIN THE CURRENT TIME STEP          SUTRA........80500
 C              AND THE SCHEDULE HAS NOT BEEN EXHAUSTED.)                 SUTRA........80600
-            DO WHILE ((DIT.GE.STEP).AND.(LCNT(NFLO).LE.LENSCH))          SUTRA........80700
+ccc            DO WHILE ((DIT.GE.STEP).AND.(LCNT(NFLO).LE.LENSCH))          SUTRA........80700
+            DO WHILE ((DIT.GE.STEP).AND.(LCOB(NFLO).LE.LENSCH))          ! fix rbw 200519b
 C..............IF THE SCHEDULED STEP IS NOT ZERO, PRINT RESULTS.         SUTRA........80800
                IF (STEP.NE.0D0) THEN                                     SUTRA........80900
                   IF (OFP(NFLO)%FRMT.EQ."OBS") THEN                      SUTRA........81000
@@ -17439,13 +17461,20 @@ C.................IF END OF TIME STEP HAS JUST BEEN PRINTED, SET FLAG.   SUTRA..
                END IF                                                    SUTRA........81900
 C..............GO TO THE NEXT ENTRY IN THE SCHEDULE, IF THERE IS ONE,    SUTRA........82000
 C                 AND INCREMENT THE COUNTER.                             SUTRA........82100
-               IF (LCNT(NFLO).LT.LENSCH) THEN                            SUTRA........82200
-                  LCNT(NFLO) = LCNT(NFLO) + 1                            SUTRA........82300
-                  TIME = DENOB(NFLO)%SLIST(LCNT(NFLO))%DVALU1            SUTRA........82400
-                  STEP = DENOB(NFLO)%SLIST(LCNT(NFLO))%DVALU2            SUTRA........82500
-               ELSE                                                      SUTRA........82600
-                  LCNT(NFLO) = LCNT(NFLO) + 1                            SUTRA........82700
-               END IF                                                    SUTRA........82800
+ccc               IF (LCNT(NFLO).LT.LENSCH) THEN                            SUTRA........82200
+ccc                  LCNT(NFLO) = LCNT(NFLO) + 1                            SUTRA........82300
+ccc                  TIME = DENOB(NFLO)%SLIST(LCNT(NFLO))%DVALU1            SUTRA........82400
+ccc                  STEP = DENOB(NFLO)%SLIST(LCNT(NFLO))%DVALU2            SUTRA........82500
+ccc               ELSE                                                      SUTRA........82600
+ccc                  LCNT(NFLO) = LCNT(NFLO) + 1                            SUTRA........82700
+ccc               END IF                                                    SUTRA........82800
+               IF (LCOB(NFLO).LT.LENSCH) THEN                            ! fix rbw 200519b ...
+                  LCOB(NFLO) = LCOB(NFLO) + 1
+                  TIME = DENOB(NFLO)%SLIST(LCOB(NFLO))%DVALU1
+                  STEP = DENOB(NFLO)%SLIST(LCOB(NFLO))%DVALU2
+               ELSE
+                  LCOB(NFLO) = LCOB(NFLO) + 1
+               END IF                                                    ! ... fix rbw 200519b
             END DO                                                       SUTRA........82900
          END IF                                                          SUTRA........83000
 C........IF THIS IS THE INITIAL OR FINAL CONDITION, PRINT IT IF IT       SUTRA........83100

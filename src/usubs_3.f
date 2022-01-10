@@ -43,6 +43,8 @@ C     NN = EXACT NUMBER OF NODES IN MESH                                 BCTIME.
 C     NPBC = EXACT NUMBER OF SPECIFIED PRESSURE NODES                    BCTIME........4300
 C     NUBC = EXACT NUMBER OF SPECIFIED CONCENTRATION                     BCTIME........4400
 C            OR TEMPERATURE NODES                                        BCTIME........4500
+C     NPBG = EXACT NUMBER OF SPECIFIED GENERALIZED-FLOW NODES            ! fix rui 200916
+C     NUBG = EXACT NUMBER OF SPECIFIED GENERALIZED-TRANSPORT NODES       ! fix rui 200916
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  BCTIME........4600
 C     IT = NUMBER OF CURRENT TIME STEP                                   BCTIME........4700
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  BCTIME........4800
@@ -64,6 +66,9 @@ C                VALUES MUST BE SPECIFIED FOR PBC AND UBC.}              BCTIME.
 C     IBCPBC(IP) = INDICATOR OF WHERE THIS PRESSURE SPECIFICATION        BCTIME........6400
 C                  WAS MADE. MUST BE SET TO -1 TO INDICATE THAT THIS     BCTIME........6500
 C                  SPECIFICATION WAS MADE IN SUBROUTINE BCTIME.          BCTIME........6600
+C     IBCSP(IP) = INDICATOR OF WHERE THIS PRESSURE SPECIFICATION         ! fix rui 200916
+C                 WAS MADE. MUST BE SET TO 0 TO INDICATE THAT THIS       ! fix rui 200916
+C                 SPECIFICATION WAS MADE IN SUBROUTINE BCTIME.           ! fix rui 200916
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  BCTIME........6700
 C     UBC(IUP) = SPECIFIED CONCENTRATION OR TEMPERATURE VALUE AT         BCTIME........6800
 C                IU(TH) SPECIFIED CONCENTRATION OR TEMPERATURE NODE      BCTIME........6900
@@ -76,6 +81,10 @@ C     IBCUBC(IUP) = INDICATOR OF WHERE THIS CONCENTRATION OR TEMPERATURE BCTIME.
 C                  SPECIFICATION WAS MADE. MUST BE SET TO -1 TO INDICATE BCTIME........7600
 C                  THAT THIS SPECIFICATION WAS MADE IN SUBROUTINE        BCTIME........7700
 C                  BCTIME.                                               BCTIME........7800
+C     IBCSU(IUP) = INDICATOR OF WHERE THIS CONCENTRATION OR TEMPERATURE  ! fix rui 200916
+C                  SPECIFICATION WAS MADE. MUST BE SET TO 0 TO INDICATE  ! fix rui 200916
+C                  THAT THIS SPECIFICATION WAS MADE IN SUBROUTINE        ! fix rui 200916
+C                  BCTIME.                                               ! fix rui 200916
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  BCTIME........7900
 C     IQSOP(IQP) = NODE NUMBER OF IQP(TH) FLUID SOURCE NODE.             BCTIME........8000
 C                  {WHEN NODE NUMBER I=IQSOP(IQP) IS NEGATIVE (I<0),     BCTIME........8100
@@ -86,6 +95,9 @@ C               INFLOW OCCURRING AT FLUID SOURCE NODE (-I)               BCTIME.
 C     IBCSOP(IQP) = INDICATOR OF WHERE THIS FLUID SOURCE SPECIFICATION   BCTIME........8600
 C                   WAS MADE. MUST BE SET TO -1 TO INDICATE THAT THIS    BCTIME........8700
 C                   SPECIFICATION WAS MADE IN SUBROUTINE BCTIME.         BCTIME........8800
+C     IBCSF(IQP) = INDICATOR OF WHERE THIS FLUID SOURCE SPECIFICATION    ! fix rui 200916
+C                  WAS MADE. MUST BE SET TO 0 TO INDICATE THAT THIS      ! fix rui 200916
+C                  SPECIFICATION WAS MADE IN SUBROUTINE BCTIME.          ! fix rui 200916
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  BCTIME........8900
 C     IQSOU(IQU) = NODE NUMBER OF IQU(TH) ENERGY OR                      BCTIME........9000
 C                  SOLUTE MASS SOURCE NODE                               BCTIME........9100
@@ -97,6 +109,83 @@ C     IBCSOU(IQU) = INDICATOR OF WHERE THIS ENERGY OR SOLUTE MASS        BCTIME.
 C                   SOURCE SPECIFICATION WAS MADE. MUST BE SET TO -1     BCTIME........9700
 C                   TO INDICATE THAT THIS SPECIFICATION WAS MADE IN      BCTIME........9800
 C                   SUBROUTINE BCTIME.                                   BCTIME........9900
+C     IBCSS(IQU) = INDICATOR OF WHERE THIS ENERGY OR SOLUTE MASS         ! fix rui 200916
+C                  SOURCE SPECIFICATION WAS MADE. MUST BE SET TO 0       ! fix rui 200916
+C                  TO INDICATE THAT THIS SPECIFICATION WAS MADE IN       ! fix rui 200916
+C                  SUBROUTINE BCTIME.                                    ! fix rui 200916
+C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  ! fix rui 200916 ...
+C     PBG1(IPG) = SPECIFIED PRESSURE VALUE AT THE FIRST OF TWO POINTS
+C                 THAT DEFINE THE LINEAR RELATION BETWEEN FLOW AND
+C                 PRESSURE AT IPG(TH) GENERALIZED-FLOW NODE
+C     QPBG1(IPG) = SPECIFIED FLOW VALUE AT THE FIRST OF TWO POINTS
+C                  THAT DEFINE THE LINEAR RELATION BETWEEN FLOW AND
+C                  PRESSURE AT IPG(TH) GENERALIZED-FLOW NODE
+C     PBG2(IPG) = SPECIFIED PRESSURE VALUE AT THE SECOND OF TWO POINTS
+C                 THAT DEFINE THE LINEAR RELATION BETWEEN FLOW AND
+C                 PRESSURE AT IPG(TH) GENERALIZED-FLOW NODE
+C     QPBG2(IPG) = SPECIFIED FLOW VALUE AT THE SECOND OF TWO POINTS
+C                  THAT DEFINE THE LINEAR RELATION BETWEEN FLOW AND
+C                  PRESSURE AT IPG(TH) GENERALIZED-FLOW NODE
+C     CPQL1(IPG) = TYPE OF LIMIT ON PRESSURE OR FLOW SPECIFIED AT
+C                  THE FIRST OF TWO POINTS THAT DEFINE THE LINEAR
+C                  RELATION BETWEEN FLOW AND PRESSURE AT IPG(TH)
+C                  GENERALIZED-FLOW NODE
+C     CPQL2(IPG) = TYPE OF LIMIT ON PRESSURE OR FLOW SPECIFIED AT
+C                  THE SECOND OF TWO POINTS THAT DEFINE THE LINEAR
+C                  RELATION BETWEEN FLOW AND PRESSURE AT IPG(TH)
+C                  GENERALIZED-FLOW NODE
+C     UPBGI(IPG) = SPECIFIED CONCENTRATION OR TEMPERATURE VALUE OF
+C                  ANY INFLOW OCCURRING AT IPG(TH) GENERALIZED-FLOW
+C                  NODE
+C     CUPBGO(IPG) = SPECIFIED INDICATOR OF WHETHER THE VALUE OF
+C                   OUTFLOW CONCENTRATION OR TEMPERATURE, UPBGO(IPG),
+C                   IS SPECIFIED DIRECTLY OR RELATIVE TO THE COMPUTED
+C                   VALUE OF CONCENTRATION OR TEMPERATURE AT IPG(TH)
+C                   GENERALIZED-FLOW NODE
+C     UPBGO(IPG) = SPECIFIED CONCENTRATION OR TEMPERATURE VALUE OF
+C                  ANY OUTFLOW OCCURRING AT IPG(TH) GENERALIZED-FLOW
+C                  NODE
+C     IPBG(IPG) = ACTUAL NODE NUMBER OF IPG(TH) GENERALIZED-FLOW NODE
+C                 {WHEN NODE NUMBER I=IPBG(IPG) IS NEGATIVE (I<0),
+C                 VALUES MUST BE SPECIFIED FOR PBG1, QPBG1, PBG2,
+C                 QPBG2, CPQL1, CPQL2, UPBGI, CUPBGO, AND UPBGO.}
+C     IBCPBG(IPG) = INDICATOR OF WHERE THIS GENERALIZED-FLOW
+C                   SPECIFICATION WAS MADE. MUST BE SET TO -1
+C                   TO INDICATE THAT THIS SPECIFICATION WAS MADE
+C                   IN SUBROUTINE BCTIME.
+C     IBCSPG(IPG) = INDICATOR OF WHERE THIS GENERALIZED-FLOW
+C                   SPECIFICATION WAS MADE. MUST BE SET TO 0
+C                   TO INDICATE THAT THIS SPECIFICATION WAS MADE
+C                   IN SUBROUTINE BCTIME.
+C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+C     UBG1(IUG) = SPECIFIED CONCENTRATION OR TEMPERATURE VALUE AT THE
+C                 FIRST OF TWO POINTS THAT DEFINE THE LINEAR RELATION
+C                 BETWEEN SOLUTE-MASS OR ENERGY FLOW AND CONCENTRATION
+C                 OR TEMPERATURE AT IUG(TH) GENERALIZED-TRANSPORT NODE
+C     QUBG1(IUG) = SPECIFIED SOLUTE-MASS OR ENERGY FLOW VALUE AT THE
+C                  FIRST OF TWO POINTS THAT DEFINE THE LINEAR RELATION
+C                  BETWEEN SOLUTE-MASS OR ENERGY FLOW AND CONCENTRATION
+C                  OR TEMPERATURE AT IUG(TH) GENERALIZED-TRANSPORT NODE
+C     UBG2(IUG) = SPECIFIED CONCENTRATION OR TEMPERATURE VALUE AT THE
+C                 SECOND OF TWO POINTS THAT DEFINE THE LINEAR RELATION
+C                 BETWEEN SOLUTE-MASS OR ENERGY FLOW AND CONCENTRATION
+C                 OR TEMPERATURE AT IUG(TH) GENERALIZED-TRANSPORT NODE
+C     QUBG2(IUG) = SPECIFIED SOLUTE-MASS OR ENERGY FLOW VALUE AT THE
+C                  SECOND OF TWO POINTS THAT DEFINE THE LINEAR RELATION
+C                  BETWEEN SOLUTE-MASS OR ENERGY FLOW AND CONCENTRATION
+C                  OR TEMPERATURE AT IUG(TH) GENERALIZED-TRANSPORT NODE
+C     IUBG(IUG) = ACTUAL NODE NUMBER OF IUG(TH) GENERALIZED-TRANSPORT
+C                 NODE {WHEN NODE NUMBER I=IUBG(IUG) IS NEGATIVE (I<0),
+C                 VALUES MUST BE SPECIFIED FOR UBG1, QUBG1, UBG2, AND
+C                 QUBG2.}
+C     IBCUBG(IUG) = INDICATOR OF WHERE THIS GENERALIZED-TRANSPORT
+C                   SPECIFICATION WAS MADE. MUST BE SET TO -1
+C                   TO INDICATE THAT THIS SPECIFICATION WAS MADE
+C                   IN SUBROUTINE BCTIME.
+C     IBCSUG(IUG) = INDICATOR OF WHERE THIS GENERALIZED-TRANSPORT
+C                   SPECIFICATION WAS MADE. MUST BE SET TO 0
+C                   TO INDICATE THAT THIS SPECIFICATION WAS MADE
+C                   IN SUBROUTINE BCTIME.                                ! ... fix rui 200916
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  BCTIME.......10000
 C                                                                        BCTIME.......10100
 C.....ADDITIONAL USEFUL VARIABLES                                        BCTIME.......10200
@@ -138,8 +227,9 @@ C     NOTE: A FLOW AND TRANSPORT SOLUTION MUST OCCUR FOR ANY             BCTIME.
 C           TIME STEP IN WHICH PBC( ) CHANGES.                           BCTIME.......13800
 C     PBC(IP) =  ((          ))                                          BCTIME.......13900
 C     UBC(IP) =  ((          ))                                          BCTIME.......14000
-C.....IBCPBC(IP) MUST BE SET TO -1 TO INDICATE THAT PBC(IP)              BCTIME.......14100
-C        AND/OR UBC(IP) HAVE BEEN SET BY SUBROUTINE BCTIME.              BCTIME.......14200
+C.....IBCPBC(IP) MUST BE SET TO -1 AND IBCSP(IP) MUST BE SET TO 0        ! fix rui 200916
+C        TO INDICATE THAT PBC(IP) AND/OR UBC(IP) HAVE BEEN SET BY        ! fix rui 200916
+C        SUBROUTINE BCTIME.                                              ! fix rui 200916
       IBCPBC(IP) = -1                                                    BCTIME.......14300
       IBCSP(IP) = 0                                                      BCTIME.......14400
   200 CONTINUE                                                           BCTIME.......14500
@@ -167,8 +257,8 @@ C     NOTE: A TRANSPORT SOLUTION MUST OCCUR FOR ANY TIME STEP IN WHICH   BCTIME.
 C           UBC( ) CHANGES.  IN ADDITION, IF FLUID PROPERTIES ARE        BCTIME.......16700
 C           SENSITIVE TO 'U', THEN A FLOW SOLUTION MUST OCCUR AS WELL.   BCTIME.......16800
 C     UBC(IUP) =   ((          ))                                        BCTIME.......16900
-C.....IBCUBC(IUP) MUST BE SET TO -1 TO INDICATE THAT UBC(IUP)            BCTIME.......17000
-C        HAS BEEN SET BY SUBROUTINE BCTIME.                              BCTIME.......17100
+C.....IBCUBC(IUP) MUST BE SET TO -1 AND IBCSU(IUP) MUST BE SET TO 0      ! fix rui 200916
+C        TO INDICATE THAT UBC(IUP) HAS BEEN SET BY SUBROUTINE BCTIME.    ! fix rui 200916
       IBCUBC(IUP) = -1                                                   BCTIME.......17200
       IBCSU(IUP) = 0                                                     BCTIME.......17300
   400 CONTINUE                                                           BCTIME.......17400
@@ -197,8 +287,9 @@ C     QIN(-I) =   ((           ))                                        BCTIME.
 C     NOTE: A TRANSPORT SOLUTION MUST OCCUR FOR ANY                      BCTIME.......19700
 C           TIME STEP IN WHICH UIN( ) CHANGES.                           BCTIME.......19800
 C     UIN(-I) =   ((           ))                                        BCTIME.......19900
-C.....IBCSOP(IQP) MUST BE SET TO -1 TO INDICATE THAT QIN(-I)             BCTIME.......20000
-C        AND/OR UIN(-I) HAVE BEEN SET BY SUBROUTINE BCTIME.              BCTIME.......20100
+C.....IBCSOP(IQP) MUST BE SET TO -1 AND IBCSF(IQP) MUST BE SET TO 0      ! fix rui 200916
+C        TO INDICATE THAT QIN(-I) AND/OR UIN(-I) HAVE BEEN SET BY        ! fix rui 200916
+C        SUBROUTINE BCTIME.                                              ! fix rui 200916
       IBCSOP(IQP) = -1                                                   BCTIME.......20200
       IBCSF(IQP) = 0                                                     BCTIME.......20300
   600 CONTINUE                                                           BCTIME.......20400
@@ -224,8 +315,8 @@ C                                                                        BCTIME.
 C     NOTE: A TRANSPORT SOLUTION MUST OCCUR FOR ANY                      BCTIME.......22400
 C           TIME STEP IN WHICH QUIN( ) CHANGES.                          BCTIME.......22500
 C     QUIN(-I) =   ((           ))                                       BCTIME.......22600
-C.....IBCSOU(IQU) MUST BE SET TO -1 TO INDICATE THAT QUIN(-I)            BCTIME.......22700
-C        HAS BEEN SET BY SUBROUTINE BCTIME.                              BCTIME.......22800
+C.....IBCSOU(IQU) MUST BE SET TO -1 AND IBCSS(IQU) MUST BE SET TO 0      ! fix rui 200916
+C        TO INDICATE THAT QUIN(-I) HAS BEEN SET BY SUBROUTINE BCTIME.    ! fix rui 200916
       IBCSOU(IQU) = -1                                                   BCTIME.......22900
       IBCSS(IQU) = 0                                                     BCTIME.......23000
   800 CONTINUE                                                           BCTIME.......23100
@@ -251,17 +342,18 @@ C     NOTE: A TRANSPORT SOLUTION MUST OCCUR FOR ANY                      BCTIME.
 C           TIME STEP IN WHICH CHANGES IN GENERALIZED-FLOW               BCTIME.......25100
 C           SPECIFICATIONS CHANGE THE RESULTANT FLOW OF FLUID            BCTIME.......25200
 C           IN OR OUT OF THE MODEL.                                      BCTIME.......25300
-C     PBG1(-I) =    ((           ))                                      BCTIME.......25400
-C     QPBG1(-I) =   ((           ))                                      BCTIME.......25500
-C     PBG2(-I) =    ((           ))                                      BCTIME.......25600
-C     QPBG2(-I) =   ((           ))                                      BCTIME.......25700
-C     CPQL1(-I) =   ((           ))                                      BCTIME.......25800
-C     CPQL2(-I) =   ((           ))                                      BCTIME.......25900
-C     UPBGI(-I) =   ((           ))                                      BCTIME.......26000
-C     CUPBGO(-I) =  ((           ))                                      BCTIME.......26100
-C     UPBGO(-I) =   ((           ))                                      BCTIME.......26200
-C.....IBCPBG(IPG) MUST BE SET TO -1 TO INDICATE THAT THE GENERALIZED-    BCTIME.......26300
-C        FLOW BOUNDARY CONDITION HAS BEEN SET BY SUBROUTINE BCTIME.      BCTIME.......26400
+C     PBG1(IPG) =    ((           ))                                     ! fix rui 200916 ...   BCTIME.......25400
+C     QPBG1(IPG) =   ((           ))                                      BCTIME.......25500
+C     PBG2(IPG) =    ((           ))                                      BCTIME.......25600
+C     QPBG2(IPG) =   ((           ))                                      BCTIME.......25700
+C     CPQL1(IPG) =   ((           ))                                      BCTIME.......25800
+C     CPQL2(IPG) =   ((           ))                                      BCTIME.......25900
+C     UPBGI(IPG) =   ((           ))                                      BCTIME.......26000
+C     CUPBGO(IPG) =  ((           ))                                      BCTIME.......26100
+C     UPBGO(IPG) =   ((           ))                                     ! ... fix rui 200916   BCTIME.......26200
+C.....IBCPBG(IPG) MUST BE SET TO -1 AND IBCSPG(IPG) MUST BE SET TO 0     ! fix rui 200916
+C        TO INDICATE THAT THE GENERALIZED-FLOW BOUNDARY CONDITION        ! fix rui 200916
+C        HAS BEEN SET BY SUBROUTINE BCTIME.                              ! fix rui 200916
       IBCPBG(IPG) = -1                                                   BCTIME.......26500
       IBCSPG(IPG) = 0                                                    BCTIME.......26600
  1000 CONTINUE                                                           BCTIME.......26700
@@ -287,12 +379,13 @@ C     NOTE: A TRANSPORT SOLUTION MUST OCCUR FOR ANY                      BCTIME.
 C           TIME STEP IN WHICH CHANGES IN GENERALIZED-TRANSPORT          BCTIME.......28700
 C           SPECIFICATIONS CHANGE THE RESULTANT FLOW OF SOLUTE OR        BCTIME.......28800
 C           ENERGY IN OR OUT OF THE MODEL.                               BCTIME.......28900
-C     UBG1(-I) =    ((           ))                                      BCTIME.......29000
-C     QUBG1(-I) =   ((           ))                                      BCTIME.......29100
-C     UBG2(-I) =    ((           ))                                      BCTIME.......29200
-C     QUBG2(-I) =   ((           ))                                      BCTIME.......29300
-C.....IBCUBG(IUG) MUST BE SET TO -1 TO INDICATE THAT THE GENERALIZED-    BCTIME.......29400
-C        FLOW BOUNDARY CONDITION HAS BEEN SET BY SUBROUTINE BCTIME.      BCTIME.......29500
+C     UBG1(IUG) =    ((           ))                                     ! fix rui 200916 ...   BCTIME.......29000
+C     QUBG1(IUG) =   ((           ))                                      BCTIME.......29100
+C     UBG2(IUG) =    ((           ))                                      BCTIME.......29200
+C     QUBG2(IUG) =   ((           ))                                     ! ... fix rui 200916   BCTIME.......29300
+C.....IBCUBG(IUG) MUST BE SET TO -1 AND IBCSUG(IUG) MUST BE SET TO 0     ! fix rui 200916
+C        TO INDICATE THAT THE GENERALIZED-FLOW BOUNDARY CONDITION        ! fix rui 200916
+C        HAS BEEN SET BY SUBROUTINE BCTIME.                              ! fix rui 200916
       IBCUBG(IUG) = -1                                                   BCTIME.......29600
       IBCSUG(IUG) = 0                                                    BCTIME.......29700
  1200 CONTINUE                                                           BCTIME.......29800
