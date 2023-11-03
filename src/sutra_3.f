@@ -2035,7 +2035,9 @@ C........DIRECT SOLVER                                                   BC.....
                         UVAL = UBC(JPU)                                  BC...........14500
                      END IF                                              BC...........14600
                      UVEC(IB) = UVEC(IB) - UMAT(IB,JB)*UVAL              BC...........14700
-                     UMAT(IB,JB) = 0D0                                   BC...........14800
+ccc                     UMAT(IB,JB) = 0D0                                ! fix bk 231103   BC...........14800
+C....................ESSENTIALLY ZERO OUT DIAGONAL IN A RECOVERABLE WAY  ! fix bk 231103
+                     UMAT(IB,JB) = UMAT(IB,JB)/GNUU                      ! fix bk 231103
                   END IF                                                 BC...........14900
                END IF                                                    BC...........15000
  1120       CONTINUE                                                     BC...........15100
@@ -2067,7 +2069,9 @@ C                 MATRIX VALUES ARE NOT                                  BC.....
                         UVAL = UBC(JPU)                                  BC...........17700
                      END IF                                              BC...........17800
                      UVEC(I) = UVEC(I) - UMAT(M,1)*UVAL                  BC...........17900
-                     UMAT(M,1) = 0D0                                     BC...........18000
+ccc                     UMAT(M,1) = 0D0                                  ! fix bk 231103   BC...........18000
+C....................ESSENTIALLY ZERO OUT DIAGONAL IN A RECOVERABLE WAY  ! fix bk 231103
+                     UMAT(M,1) = UMAT(M,1)/GNUU                          ! fix bk 231103
                   END IF                                                 BC...........18100
                END IF                                                    BC...........18200
  1170       CONTINUE                                                     BC...........18300
@@ -17274,6 +17278,8 @@ C           GUESS FOR U(0) SOLUTION INTO B BEFORE CALLING SOLVER.        SUTRA..
      1            IWK,FWK,IA,JA,IERRU,ITRSU,ERRU)                        SUTRA........63600
 C.....IF DIRECT SOLVER, SAVE U(0) AND FINALIZE UVEC AT SPEC-U NODES      SUTRA........63700
       CALL FINALU()                                                      SUTRA........63800
+C.....RESTORE SPEC-U MATRIX OFF-DIAGONALS                               ! fix bk 231103
+      CALL UBCMAT(ML,UMAT,IA,JA,IBCUBC,ISUBC)                           ! fix bk 231103
       ONCEU = .TRUE.                                                     SUTRA........63900
  6000 CONTINUE                                                           SUTRA........64000
 C.....U SOLUTION NOW IN UVEC                                             SUTRA........64100
@@ -17786,6 +17792,88 @@ C                                                                        TIMETS.
       RETURN                                                             TIMETS........3200
       END                                                                TIMETS........3300
 C                                                                        TIMETS........3400
+C     SUBROUTINE        U  B  C  M  A  T           SUTRA VERSION 3.0     ! fix bk 231103 ...
+C                                                                       
+C *** PURPOSE :                                                         
+C ***  TO RESTORE SPEC-U MATRIX OFF-DIAGONALS.                          
+C                                                                       
+      SUBROUTINE UBCMAT(ML,UMAT,IA,JA,IBCUBC,ISUBC)                     
+      USE LARR, ONLY : LKBCUBC                                          
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)                               
+      DIMENSION UMAT(NELT,NCBI)                                         
+      INTEGER(1) IBCUBC(NBCN)                                           
+      DIMENSION IA(NDIMIA),JA(NDIMJA),ISUBC(NN)               
+      COMMON /CONTRL/ GNUP,GNUU,UP,DTMULT,DTMAX,ME,ISSFLO,ISSTRA,ITCYC, 
+     1   NPCYC,NUCYC,NPRINT,NBCFPR,NBCSPR,NBCPPR,NBCUPR,NLAKPR,IREAD,   
+     1   NBGPPR,NBGUPR,ISTORE,NOUMAT,IUNSAT,IALSAT,KTYPE                
+      COMMON /DIMS/ NN,NE,NIN,NBI,NCBI,NB,NBHALF,NPBC,NUBC,             
+     1   NSOP,NSOU,NBCN,NPBG,NUBG,NCIDB                                 
+      COMMON /DIMX/ NWI,NWF,NWL,NELT,NNNX,NEX,N48                       
+      COMMON /DIMX2/ NELTA,NNVEC,NDIMIA,NDIMJA                          
+      COMMON /SOLVI/ KSOLVP,KSOLVU,NN1,NN2,NN3                          
+C                                                                       
+C                                                                       
+C.....SET UP MATRIX STRUCTURE INFORMATION                               
+      IF (KSOLVP.EQ.0) THEN                                             
+         JMID = NBHALF                                                  
+      ELSE                                                              
+         JMID = 1                                                       
+      END IF                                                            
+C                                                                       
+ 1050 IF (ML.NE.1) THEN                                                 
+ 1100 IF(NUBC.EQ.0) GOTO 3000                                           
+C                                                                       
+C.....FOR ALL SOLVERS, RESTORE SPEC-U MATRIX OFF-DIAGONALS              
+      IF (KSOLVU.EQ.0) THEN                                             
+C........DIRECT SOLVER                                                  
+         DO 1140 I=1,NN                                                 
+            IB = I                                                      
+            DO 1120 JB=1,NB                                             
+               J=JB+IB-NBHALF                                           
+               IF ((J.EQ.I).OR.(J.LT.1).OR.(J.GT.NN)) CYCLE             
+               JPU = ISUBC(J)                                           
+               IF (JPU.NE.0) THEN                                       
+                  IF ((IBCUBC(JPU).NE.2).AND.(LKBCUBC(JPU))) THEN       
+                     UMAT(IB,JB) = UMAT(IB,JB)*GNUU                     
+                  END IF                                                
+               END IF                                                   
+ 1120       CONTINUE                                                    
+ 1140    CONTINUE                                                       
+      ELSE                                                              
+C........ITERATIVE SOLVER (SLAP COLUMN)                                 
+         DO 1180 I=1,NN                                                 
+            MDBEG = JA(I)                                               
+            MDEND = JA(I + 1) - 1                                       
+            DO 1170 MJ=MDBEG+1,MDEND                                    
+               J = IA(MJ)                                               
+C..............ASSUME MATRIX STRUCTURE IS SYMMETRIC, EVEN IF            
+C                 MATRIX VALUES ARE NOT                                 
+               MBEG = JA(J)                                             
+               MEND = JA(J + 1) - 1                                     
+               DO 1150 MM=MBEG,MEND                                     
+                  IF (I.EQ.IA(MM)) THEN                                 
+                     M = MM                                             
+                     GOTO 1152                                          
+                  END IF                                                
+ 1150          CONTINUE                                                 
+ 1152          JPU = ISUBC(J)                                           
+               IF (JPU.NE.0) THEN                                       
+                  IF ((IBCUBC(JPU).NE.2).AND.(LKBCUBC(JPU))) THEN       
+                     UMAT(M,1) = UMAT(M,1)*GNUU
+                  END IF                                                
+               END IF                                                   
+ 1170       CONTINUE                                                    
+ 1180    CONTINUE                                                       
+      END IF                                                            
+C                                                                       
+      END IF                                                            
+C
+ 3000 CONTINUE                                                          
+C                                                                       
+C                                                                       
+      RETURN                                                            
+      END                                                               
+C                                                                        ! ... fix bk 231103
 C     FUNCTION          V  I  S  C  F  U  N        SUTRA VERSION 3.0     VISCFUN........100
 C                                                                        VISCFUN........200
 C *** PURPOSE :                                                          VISCFUN........300
